@@ -61,3 +61,4 @@ static AddIn xai_black_put(
    	ensure(std::round(xll_black_call(100, 0.2, 100, 0.25) * 1000.0) / 1000.0 == 3.988);
 
  	});#endif 
+ 
