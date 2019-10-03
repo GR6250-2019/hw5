@@ -19,7 +19,7 @@ namespace fms::normal {
         return exp(-z*z/2)/(sigma*M_SQRT2PI);
     }
     // Normal cumulative distribution function.
-    inline double cdf(double x, double mu = 0, double sigma = 1)
+    inline double cdf(double x, double mu = 0, double sigma =1)
     {
         auto z = (x - mu)/sigma;
 
