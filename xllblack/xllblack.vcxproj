@@ -152,15 +152,12 @@
     <ClCompile Include="xll_normal.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="README.md" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\xll12\xll12.vcxproj">
       <Project>{3563c165-8a72-4be5-b8af-fd5904c9030e}</Project>
     </ProjectReference>
-    <ProjectReference Include="xll12\xll12.vcxproj">
-      <Project>{3563c165-8a72-4be5-b8af-fd5904c9030e}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="README.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
