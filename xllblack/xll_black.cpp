@@ -22,8 +22,6 @@ test test_moneyness([]() {
 
 	});
 
-//!!! Implement XLL.BLACK.PUT(f, sigma, k, t) and XLL.BLACK.CALL(f, sigma, k, t)
-
 static AddIn xai_black_put(
 	Function(XLL_DOUBLE, L"?xll_black_put", L"XLL.BLACK.PUT")
 	.Arg(XLL_DOUBLE, L"f", L"is the forward.", L"100")
@@ -71,3 +69,33 @@ double WINAPI xll_black_call(double f, double sigma, double k, double t)
 
     return result;
 }
+
+test test_delta([]() {
+
+    double f = 100;
+    double sigma = .2;
+    double k = 100;
+    double t = 0.25;
+
+    double p = put(f, sigma, k, t);
+
+    for (double h : {.01, .001, .0001, 0.00001, .000001}) {
+        double dp = put_delta(f, sigma, k, t);
+        double p_ = put(f + h, sigma, k, t);
+        double _p = put(f - h, sigma, k, t);
+        double dp_ = (p_ - _p) / (2 * h);
+        double gamma = (p_ - 2 * p + _p) / (h * h);
+        //double a, b;
+        //a = dp - dp_;
+        //b = gamma * h * h / 2;
+        ensure(fabs(dp - dp_) <= gamma*h*h/2);
+    }
+
+    });
+
+test test_vega([]() {
+    //!!! Implement a test for vega
+
+    });
+
+//!!! Implement XLL.BLACK.PUT.IMPLIED(f, p, k, t) where p is the put value.
