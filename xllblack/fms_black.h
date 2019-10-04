@@ -31,7 +31,7 @@ namespace fms::black {
 	inline auto call(F f, S sigma, K k, T t)
 	{
 		auto s = sigma * sqrt(t);
-		auto d2 = moneyness(f, s, k);
+		auto d2 = -moneyness(f, s, k);
 		auto d1 = d2 + s;
 
 		return f * normal::cdf(d1) - k * normal::cdf(d2);

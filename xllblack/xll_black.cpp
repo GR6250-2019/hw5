@@ -11,8 +11,8 @@ test test_moneyness([]() {
 	double k = 100;
 	double t = 0.25;
 
-	//double z = moneyness(f, sigma, k, t);
-	//ensure(z == (0.2 * 0.2 * 0.25 / 2) / (0.2 * sqrt(0.25)));
+	double z = moneyness(f, sigma*sqrt(t), k);
+	ensure(z == (0.2 * 0.2 * 0.25 / 2) / (0.2 * sqrt(0.25)));
 	
 	double p = put(f, sigma, k, t);
 	ensure(fabs(p - 3.987) < 0.001);
@@ -46,4 +46,28 @@ double WINAPI xll_black_put(double f, double sigma, double k, double t)
 	}
 
 	return result;
+}
+
+static AddIn xai_black_call(
+    Function(XLL_DOUBLE, L"?xll_black_call", L"XLL.BLACK.CALL")
+    .Arg(XLL_DOUBLE, L"f", L"is the forward.", L"100")
+    .Arg(XLL_DOUBLE, L"sigma", L"is the volatility.", L"0.2")
+    .Arg(XLL_DOUBLE, L"k", L"is the strike.", L"100")
+    .Arg(XLL_DOUBLE, L"t", L"is the time in years to expiration.", L"0.25")
+    .Category(L"XLL")
+    .FunctionHelp(L"Return Black call value.")
+);
+double WINAPI xll_black_call(double f, double sigma, double k, double t)
+{
+#pragma XLLEXPORT
+    double result = std::numeric_limits<double>::quiet_NaN();
+
+    try {
+        result = call(f, sigma, k, t);
+    }
+    catch (const std::exception & ex) {
+        XLL_ERROR(ex.what());
+    }
+
+    return result;
 }
