@@ -1,5 +1,6 @@
 // fms_black.h - Black model
 #pragma once
+#include <algorithm>
 #include "..//xll12/xll/ensure.h"
 #include "fms_normal.h"
 
@@ -24,10 +25,10 @@ namespace fms::black {
         ensure(t > 0);
 
         auto s = sigma * sqrt(t);
-		auto d2 = -moneyness(f, s, k);
-		auto d1 = d2 + s;
+		auto z = moneyness(f, s, k);
+		auto z_ = z - s;
 
-		return k * normal::cdf(-d2) - f * normal::cdf(-d1);
+		return k * normal::cdf(z) - f * normal::cdf(z_);
 	}
 
 	template<class F, class S, class K, class T>
@@ -37,10 +38,10 @@ namespace fms::black {
         ensure(t > 0);
         
         auto s = sigma * sqrt(t);
-		auto d2 = -moneyness(f, s, k);
-		auto d1 = d2 + s;
+        auto z = moneyness(f, s, k);
+        auto z_ = z - s;
 
-		return f * normal::cdf(d1) - k * normal::cdf(d2);
+		return f * normal::cdf(-z_) - k * normal::cdf(-z); // 1 - Phi(x) = Phi(-x)
 	}
 
     // Derivative of put value with respect to f.
@@ -51,10 +52,10 @@ namespace fms::black {
         ensure(t > 0);
         
         auto s = sigma * sqrt(t);
-        auto d2 = -moneyness(f, s, k);
-        auto d1 = d2 + s;
+        auto z = moneyness(f, s, k);
+        auto z_ = z - s;
 
-        return -normal::cdf(-d1);
+        return -normal::cdf(z_);
     }
 
     // Derivative of a put or call value with respect to sigma.
@@ -65,10 +66,10 @@ namespace fms::black {
         ensure(t > 0);
         
         auto s = sigma * sqrt(t);
-        auto d2 = -moneyness(f, s, k);
-        auto d1 = d2 + s;
+        auto z = moneyness(f, s, k);
+        auto z_ = z - s;
 
-        return f*normal::pdf(d1)*t;
+        return f*normal::pdf(z_)*s/sigma;
     }
 
     // Value of sigma for a put having value p.
@@ -76,7 +77,19 @@ namespace fms::black {
     inline auto put_implied_volatility(F f, P p, K k, T t)
     {
         //!!! Put in appropriate checks, including bounds for p.
-        return 0; // !!!implement using Newton-Raphson 
+        ensure(f > 0);
+        ensure(k > 0);
+        ensure(t > 0);
+        ensure(p > 0);
+        ensure(p > k - f);
+
+        P sigma_, sigma = 0.2; // initial guess
+        do {
+            sigma_ = sigma - (put(f, sigma, k, t) - p) / vega(f, sigma, k, t);
+            std::swap(sigma_, sigma);
+        } while (fabs(sigma_ - sigma) > 100 * std::numeric_limits<double>::epsilon());
+
+        return sigma_; // !!!implement using Newton-Raphson 
     }
 
 } // fms::black
