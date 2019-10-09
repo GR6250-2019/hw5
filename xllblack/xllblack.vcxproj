@@ -152,6 +152,7 @@
     <ClCompile Include="xll_normal.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="normal_inv.xlsx" />
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
