@@ -68,7 +68,7 @@ namespace fms::black {
         auto d2 = -moneyness(f, s, k);
         auto d1 = d2 + s;
 
-        return f*normal::pdf(d1)*t;
+        return f*normal::pdf(d1)*sqrt(t);
     }
 
     // Value of sigma for a put having value p.
@@ -85,19 +85,19 @@ namespace fms::black {
 		auto y_0 = vega(f, sigma_initial, k, t) ;
 		auto x_1 = sigma_initial - y0 / y_0;
 		auto count = 0;
-		while (put(f, x_1, k, t) != 0) {
+		while (abs(put(f, x_1, k, t)-p)> 0.00001) {
 			count = count + 1;
 			y0 = put(f, x_1, k, t) - p;
 			y_0 = vega(f, x_1, k, t) ;
 			x_1 = x_1 - y0 / y_0;
-			if (count > 99999) {
+			if (count == 99999) {
 				//when there is no convergernce over this amout of iteration
 				//return error value
-				x_1 = -1;
+				x_1 = -99;
 				return x_1;
 			}
 		}
-        return x_1; // !!!implement using Newton-Raphson 
+        return x_1;  
     }
 
 } // fms::black
