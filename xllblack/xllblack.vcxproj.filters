@@ -23,6 +23,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />
+    <None Include="..\..\..\..\Desktop\normal_inv.xlsx" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="xll_black.cpp">
