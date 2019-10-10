@@ -35,7 +35,6 @@ namespace fms::black {
 	{
         ensure(sigma > 0);
         ensure(t > 0);
-        
         auto s = sigma * sqrt(t);
 		auto d2 = -moneyness(f, s, k);
 		auto d1 = d2 + s;
@@ -76,7 +75,18 @@ namespace fms::black {
     inline auto put_implied_volatility(F f, P p, K k, T t)
     {
         //!!! Put in appropriate checks, including bounds for p.
-        return 0; // !!!implement using Newton-Raphson 
+		// sigma(i+1) = sigma(i) - f(sigma(i))/f'(sigma(i))
+		// f(.) eqauls the price derived from the BS formula minus the market price.
+		// f'(.) is the Vega.
+		ensure(p >= 0);
+		double epsilon = pow(10, -3);
+		double sigma = 0.001; // initial guess of sigma
+		double delta = 1;
+		while (delta > epsilon) {
+			sigma -= (put(f, sigma, k, t) - p) / vega(f, sigma, k, t);
+			delta = fabs(put(f, sigma, k, t) - p);
+		}
+        return sigma; // !!!implement using Newton-Raphson 
     }
 
 } // fms::black
