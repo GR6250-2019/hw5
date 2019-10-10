@@ -76,7 +76,17 @@ namespace fms::black {
     inline auto put_implied_volatility(F f, P p, K k, T t)
     {
         //!!! Put in appropriate checks, including bounds for p.
-        return 0; // !!!implement using Newton-Raphson 
+		ensure(f > 0);
+		ensure(p > 0);
+		ensure(k > 0);
+		ensure(t > 0);
+		auto sigma = p/0.4/std::sqrt(t)/f;
+		auto cnt = 100000;
+		while (cnt > 0 && sigma>0 && fabs(put(f, sigma, k, t) - p) > 0.0001) {
+			sigma = sigma - put(f, sigma, k, t) / vega(f, sigma, k, t);
+			cnt--;
+		}
+        return sigma; // !!!implement using Newton-Raphson 
     }
 
 } // fms::black
