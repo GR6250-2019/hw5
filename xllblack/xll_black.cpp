@@ -114,7 +114,7 @@ test test_vega([]() {
 
 //!!! Implement XLL.BLACK.PUT.IMPLIED(f, p, k, t) where p is the put value.
 static AddIn xai_black_put_implied_volatility(
-	Function(XLL_DOUBLE, L"?xll_black_put_implied", L"XLL.BLACK.PUT.IMPLIED")
+	Function(XLL_DOUBLE, L"?xll_black_put_implied_volatility", L"XLL.BLACK.PUT.IMPLIED.Volatility")
 	.Arg(XLL_DOUBLE, L"f", L"is the forward.")
 	.Arg(XLL_DOUBLE, L"p", L"is the put value.")
 	.Arg(XLL_DOUBLE, L"k", L"is the strike.")
