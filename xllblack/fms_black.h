@@ -68,7 +68,7 @@ namespace fms::black {
         auto d2 = -moneyness(f, s, k);
         auto d1 = d2 + s;
 
-        return f*normal::pdf(d1)*t;
+        return f*normal::pdf(d1)* sqrt(t);
     }
 
     // Value of sigma for a put having value p.
@@ -76,7 +76,24 @@ namespace fms::black {
     inline auto put_implied_volatility(F f, P p, K k, T t)
     {
         //!!! Put in appropriate checks, including bounds for p.
-        return 0; // !!!implement using Newton-Raphson 
+		
+		ensure(f > 0)
+		ensure(t > 0)
+		ensure(k > 0)
+
+		if (p <= 0 || p >= 1) {
+			throw std::domain_error("fms::normal::inv argument must be in the interval (0,1)");
+		}
+
+		//initial guess
+		double x_, x = (M_SQRT2PI/sqrt(t))*(p/f);
+
+		do {
+			x_ = x - (put(f, x, k, t) - p) / vega(f, x, k, t);
+			std::swap(x_, x);
+		} while (fabs(x_ - x) > 2 * std::numeric_limits<double>::epsilon());
+
+		return x_; // !!!implement using Newton-Raphson 
     }
 
 } // fms::black
