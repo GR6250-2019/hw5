@@ -5,6 +5,7 @@
 using namespace xll;
 using namespace fms::black;
 
+#ifdef _DEBUG
 test test_moneyness([]() {
 	double f = 100;
 	double sigma = 0.2;
@@ -21,6 +22,7 @@ test test_moneyness([]() {
 	ensure(fabs(c - 3.987) < 0.001);
 
 	});
+#endif // _DEBUG
 
 static AddIn xai_black_put(
 	Function(XLL_DOUBLE, L"?xll_black_put", L"XLL.BLACK.PUT")

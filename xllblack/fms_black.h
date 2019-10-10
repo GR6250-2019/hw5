@@ -17,6 +17,7 @@ namespace fms::black {
 		return (s * s / 2 + log(k / f)) / s;
 	}
     
+    // E(k - F)^+ = k P(F <= k) - f P_(F <= k) 
 	template<class F, class S, class K, class T>
 	inline auto put(F f, S sigma, K k, T t)
 	{
@@ -24,12 +25,13 @@ namespace fms::black {
         ensure(t > 0);
 
         auto s = sigma * sqrt(t);
-		auto d2 = -moneyness(f, s, k);
-		auto d1 = d2 + s;
+		auto d2 = moneyness(f, s, k);
+		auto d1 = d2 - s;
 
-		return k * normal::cdf(-d2) - f * normal::cdf(-d1);
+		return k * normal::cdf(d2) - f * normal::cdf(d1);
 	}
 
+    // E(F - k)^+ = f P_(F >= k) - k P(F >= k)
 	template<class F, class S, class K, class T>
 	inline auto call(F f, S sigma, K k, T t)
 	{
@@ -37,10 +39,10 @@ namespace fms::black {
         ensure(t > 0);
         
         auto s = sigma * sqrt(t);
-		auto d2 = -moneyness(f, s, k);
-		auto d1 = d2 + s;
+		auto d2 = moneyness(f, s, k);
+		auto d1 = d2 - s;
 
-		return f * normal::cdf(d1) - k * normal::cdf(d2);
+		return f * normal::cdf(-d1) - k * normal::cdf(-d2); // 1 - N(x) = N(-x);
 	}
 
     // Derivative of put value with respect to f.
@@ -51,10 +53,10 @@ namespace fms::black {
         ensure(t > 0);
         
         auto s = sigma * sqrt(t);
-        auto d2 = -moneyness(f, s, k);
-        auto d1 = d2 + s;
+        auto d2 = moneyness(f, s, k);
+        auto d1 = d2 - s;
 
-        return -normal::cdf(-d1);
+        return -normal::cdf(d1);
     }
 
     // Derivative of a put or call value with respect to sigma.
@@ -65,8 +67,8 @@ namespace fms::black {
         ensure(t > 0);
         
         auto s = sigma * sqrt(t);
-        auto d2 = -moneyness(f, s, k);
-        auto d1 = d2 + s;
+        auto d2 = moneyness(f, s, k);
+        auto d1 = d2 - s;
 
         return f*normal::pdf(d1)*sqrt(t);
     }
