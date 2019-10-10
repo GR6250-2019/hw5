@@ -78,7 +78,25 @@ namespace fms::black {
     inline auto put_implied_volatility(F f, P p, K k, T t)
     {
         //!!! Put in appropriate checks, including bounds for p.
-        return 0; // !!!implement using Newton-Raphson 
+		ensure(t > 0); // ensure a future time to expiration
+		ensure(f > 0); // ensure equity has postive value
+		ensure(k > 0); // ensure strike is postive value
+
+		// p bounds
+		ensure(p <= k); // ensure put option value to sell equity is under the strike price
+		ensure(p >= k - f); // ensure that the put option value is greater than the difference between the strike price and forward value
+		
+        // !!!implement using Newton-Raphson 
+		double sigma =  sqrt((2*3.14) / t) * (p / k); // Initial guess from Brenner and Subrajmanyam (1988)
+		double p_test = p - put(f, sigma, k, t); // calculate put value given current sigma
+
+		while (fabs(p - p_test) > 2 * std::numeric_limits<double>::epsilon()) {
+			sigma = sigma - ((put(f, sigma, k, t) - p) / vega(f, sigma, k, t)); // update sigma
+			p_test = put(f, sigma, k, t); // calculate put value given current sigma
+		}
+
+		return sigma; // return volatility
+
     }
 
 } // fms::black
