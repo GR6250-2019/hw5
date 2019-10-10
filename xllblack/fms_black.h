@@ -2,6 +2,7 @@
 #pragma once
 #include "..//xll12/xll/ensure.h"
 #include "fms_normal.h"
+//#define M_SQRT2PI  2.50662827463100050240
 
 namespace fms::black {
 
@@ -78,7 +79,21 @@ namespace fms::black {
     inline auto put_implied_volatility(F f, P p, K k, T t)
     {
         //!!! Put in appropriate checks, including bounds for p.
-        return 0; // !!!implement using Newton-Raphson 
+		ensure(f > 0);
+		ensure(p >= 0);
+		ensure(k > 0);
+		ensure(t > 0);
+
+		//Newton-Raphson
+		//x = M_SQRT2PI / sqrt(t) * p / k -> famous guess by famous people
+		double x_, x = 0.5; //my initial guess
+		
+		do {
+			x_ = x - (put(f, x, k, t) - p) / vega(f, x, k, t);
+			std::swap(x_, x);
+		} while (fabs(x_ - x) > 2 * std::numeric_limits<double>::epsilon());
+
+        return x; 
     }
 
 } // fms::black
