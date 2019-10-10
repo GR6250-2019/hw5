@@ -76,9 +76,24 @@ namespace fms::black {
     // Value of sigma for a put having value p.
     template<class F, class P, class K, class T>
     inline auto put_implied_volatility(F f, P p, K k, T t)
-    {
-        //!!! Put in appropriate checks, including bounds for p.
-        return 0; // !!!implement using Newton-Raphson 
-    }
+	{
+		//-------------------------Bounds Checks--------------------------
+		ensure(p >= 0);
+		ensure(f > 0);
+		ensure(k > 0);
+		ensure(t > 0);
+		
+		//-------------------------a formula to generate reasonable initial guess-------------
+		double s0 = (M_SQRT2PI / sqrt(t)) * (p / f);
+		//double s0 = 0.3;
+		double sig;
+		do {
+			double y = put(f, s0, k, t) - p;
+			sig = s0 - y / vega(f, s0, k, t);
+			std::swap(sig, s0);
+		} while (fabs(sig - s0) > 2 * std::numeric_limits<double>::epsilon());
+
+		return sig;
+	}
 
 } // fms::black
