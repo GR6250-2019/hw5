@@ -81,8 +81,7 @@ namespace fms::black {
 		ensure(p >= k - f);
 
 		//initial guess s0
-		//double s0 = (M_SQRT2PI/sqrt(t))*(p/f);
-		double s0 = 0.8;
+		double s0 = (M_SQRT2PI/sqrt(t))*(p/f);
 		double p_ = put(f, s0, k, t);
 
 		//use Newton-Raphson
