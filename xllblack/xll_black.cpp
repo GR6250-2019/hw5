@@ -136,18 +136,3 @@ double WINAPI xll_black_put_implied_volatility(double f, double p, double k, dou
 
 	return result;
 }
-
-#ifdef _DEBUG
-
-test test_put_implied_volatility([]() {
-	double f = 100;
-	double p = 3.987;
-	double k = 100;
-	double t = 0.25;
-
-	double result = put_implied_volatility(f, p, k, t);
-	ensure(fabs(result - 0.2) < 0.001);
-
-	});
-
-#endif
