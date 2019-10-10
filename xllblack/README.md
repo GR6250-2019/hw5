@@ -5,7 +5,7 @@
 Duplicate the function `fms::normal::inv` in the file `fms_normal.h`:
 
 - Choose a cell for input `x`. Start with `x` equal to 0.
-- Choose a cell for for the output, `p`, of function `NORMSINV(x)`
+- Choose a cell for for the output, `p`, of function `NORMSDIST(x)`
 - Using `p` as input, duplicate the code for the initial guess on line 40 of `fms_normal.h`. Call this `x0`.
 - In the cell to the right of the initial guess enter the formula for `XLL.NORMAL.CDF(x0) - p`
 - In the cell to the right of this enter the formula for `XLL.NORMAL.PDF(x0)`
