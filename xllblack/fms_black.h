@@ -78,18 +78,20 @@ namespace fms::black {
     inline auto put_implied_volatility(F f, P p, K k, T t)
     {
         //!!! Put in appropriate checks, including bounds for p.
-	double x = 0.1;
-	double p_i = put(f, x, k, t);
-	double x_ = x;
+	ensure(f > 0);
+	ensure(p > 0);
+	ensure(k > 0);
+	ensure(t > 0);
 
-	do {
+	auto x = 0.25;
+	auto price = put(f, x, k, t);
 
-		p_i = put(f, x, k, t);
-		x_ = x - (p_i - p) / vega(f, x, k, t);
-		std::swap(x_, x);
-	} while (fabs(x_ - x) > 2 * std::numeric_limits<double>::epsilon());
+	while (fabs(price - p) > 1e-5) {
+		x = x + (p - price) / vega(f, x, k, t);
+		price = put(f, x, k, t);
+	};
 
-        return x; // !!!implement using Newton-Raphson 
+	return x; // !!!implement using Newton-Raphson  
     }
 
 } // fms::black
