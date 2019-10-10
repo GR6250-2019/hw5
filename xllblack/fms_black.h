@@ -3,6 +3,10 @@
 #include "..//xll12/xll/ensure.h"
 #include "fms_normal.h"
 
+#ifndef M_SQRT2PI
+#define M_SQRT2PI  2.50662827463100050240
+#endif
+
 namespace fms::black {
 
 	// F = f exp(sigma B_t - sigma^2 t/2) is the Black model.
@@ -75,8 +79,24 @@ namespace fms::black {
     template<class F, class P, class K, class T>
     inline auto put_implied_volatility(F f, P p, K k, T t)
     {
-        //!!! Put in appropriate checks, including bounds for p.
-        return 0; // !!!implement using Newton-Raphson 
+        // appropriate checks, including bounds for p.		
+		
+		ensure(f > 0);
+		ensure(p > 0);
+		ensure(p < k);
+		ensure(k > 0);
+		ensure(t > 0);				
+		
+		// implement using Newton-Raphson 
+		
+		double x_, x = ( p / f ) * M_SQRT2PI / sqrt( t ) ;
+
+		do {
+			x_ = x - (put(f, x, k, t) - p) / vega(f, x, k, t);
+			std::swap(x_, x);
+		} while (fabs(x_ - x) > 2*std::numeric_limits<double>::epsilon());
+
+		return x_;
     }
 
 } // fms::black
