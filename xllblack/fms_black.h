@@ -1,41 +1,104 @@
 // fms_black.h - Black model
 #pragma once
+#include "..//xll12/xll/ensure.h"
 #include "fms_normal.h"
+
+#ifndef M_SQRT2PI
+#define M_SQRT2PI  2.50662827463100050240
+#endif
 
 namespace fms::black {
 
-    // Use cdf from fms_normal.
-
-	inline double cdf(double x, double mu = 0, double sigma = 1)
+	// F = f exp(sigma B_t - sigma^2 t/2) is the Black model.
+	// F <= k if and only if B_t/sqrt(t) <= (sigma^2 t/2 + log (k/f))/sigma sqrt(t)
+	template<class F, class S, class K>
+	inline auto moneyness(F f, S s, K k)
 	{
-		auto z = (x - mu) / sigma;
+		ensure(f > 0);
+		ensure(s > 0);
+		ensure(k > 0);
 
-		return (1 + erf(z / M_SQRT2)) / 2;
+		return (s * s / 2 + log(k / f)) / s;
+	}
+    
+    // E(k - F)^+ = k P(F <= k) - f P_(F <= k) 
+	template<class F, class S, class K, class T>
+	inline auto put(F f, S sigma, K k, T t)
+	{
+        ensure(sigma > 0);
+        ensure(t > 0);
+
+        auto s = sigma * sqrt(t);
+		auto d2 = moneyness(f, s, k);
+		auto d1 = d2 - s;
+
+		return k * normal::cdf(d2) - f * normal::cdf(d1);
 	}
 
-	// Black put and call code goes here.
-
-	inline double blackput(double f, double sigma, double k, double t) 
+    // E(F - k)^+ = f P_(F >= k) - k P(F >= k)
+	template<class F, class S, class K, class T>
+	inline auto call(F f, S sigma, K k, T t)
 	{
-		
-		double d1 = ( log ( f / k ) + ( ( pow(sigma, 2) / 2 ) * t ) ) / ( sigma * pow(t, 0.5) );
-		double d2 = d1 - (sigma * pow(t, 0.5) );
+        ensure(sigma > 0);
+        ensure(t > 0);
+        
+        auto s = sigma * sqrt(t);
+		auto d2 = moneyness(f, s, k);
+		auto d1 = d2 - s;
 
-		double put = cdf( -d2 ) * k - cdf( -d1 ) * f;
-		put = round ( put * 1000.0) / 1000.0;
-		return put;
+		return f * normal::cdf(-d1) - k * normal::cdf(-d2); // 1 - N(x) = N(-x);
 	}
-	
-	inline double blackcall(double f, double sigma, double k, double t)
-	{
+
+    // Derivative of put value with respect to f.
+    template<class F, class S, class K, class T>
+    inline auto put_delta(F f, S sigma, K k, T t)
+    {
+        ensure(sigma > 0);
+        ensure(t > 0);
+        
+        auto s = sigma * sqrt(t);
+        auto d2 = moneyness(f, s, k);
+        auto d1 = d2 - s;
+
+        return -normal::cdf(d1);
+    }
+
+    // Derivative of a put or call value with respect to sigma.
+    template<class F, class S, class K, class T>
+    inline auto vega(F f, S sigma, K k, T t)
+    {
+        ensure(sigma > 0);
+        ensure(t > 0);
+        
+        auto s = sigma * sqrt(t);
+        auto d2 = moneyness(f, s, k);
+        auto d1 = d2 - s;
+
+        return f*normal::pdf(d1)*sqrt(t);
+    }
+
+    // Value of sigma for a put having value p.
+    template<class F, class P, class K, class T>
+    inline auto put_implied_volatility(F f, P p, K k, T t)
+    {
+        // appropriate checks, including bounds for p.		
 		
-		double d1 = ( log ( f / k ) + ( pow(sigma, 2) / 2 ) * t ) / ( sigma * pow(t, 0.5) );
-		double d2 = d1 - (sigma * pow(t, 0.5));
+		ensure(f > 0);
+		ensure(p > 0);
+		ensure(p < k);
+		ensure(k > 0);
+		ensure(t > 0);				
 		
-		double call = cdf( d1 ) * f - cdf (d2) * k ;
-		call = round(call * 1000.0) / 1000.0;
-		return call;
-	
-	}
-	
+		// implement using Newton-Raphson 
+		
+		double x_, x = ( p / f ) * M_SQRT2PI / sqrt( t ) ;
+
+		do {
+			x_ = x - (put(f, x, k, t) - p) / vega(f, x, k, t);
+			std::swap(x_, x);
+		} while (fabs(x_ - x) > 2*std::numeric_limits<double>::epsilon());
+
+		return x_;
+    }
+
 } // fms::black
