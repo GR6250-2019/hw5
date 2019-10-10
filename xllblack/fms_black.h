@@ -68,7 +68,7 @@ namespace fms::black {
         auto d2 = -moneyness(f, s, k);
         auto d1 = d2 + s;
 
-        return f*normal::pdf(d1)*t;
+        return f*normal::pdf(d1)*sqrt(t);
     }
 
     // Value of sigma for a put having value p.
