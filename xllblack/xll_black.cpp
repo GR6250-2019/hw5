@@ -96,8 +96,49 @@ test test_delta([]() {
     });
 
 test test_vega([]() {
-    //!!! Implement a test for vega
 
+	double f = 100;
+	double sigma = .2;
+	double k = 100;
+	double t = 0.25;
+
+	double p = put(f, sigma, k, t);
+
+	for (double h : {.01, .001, .0001, 0.00001, .000001}) {
+		double v = vega(f, sigma, k, t);
+		double v_ = put(f, sigma + h, k, t);
+		double _v = put(f, sigma - h, k, t);
+		double dp = (v_ - _v) / (2 * h);
+		double gamma = (v_ - 2 * p + _v) / (h * h);
+		//double a, b;
+		//a = dp - dp_;
+		//b = gamma * h * h / 2;
+		ensure(fabs(v - dp) <= gamma * h * h / 2);
+	}
     });
 
 //!!! Implement XLL.BLACK.PUT.IMPLIED(f, p, k, t) where p is the put value.
+static AddIn xai_black_put_implied(
+	Function(XLL_DOUBLE, L"?xll_black_put_implied", L"XLL.BLACK.PUT.IMPLIED")
+	.Arg(XLL_DOUBLE, L"f", L"is the forward.", L"100")
+	.Arg(XLL_DOUBLE, L"P", L"is the price of put option.", L"5")
+	.Arg(XLL_DOUBLE, L"k", L"is the strike.", L"100")
+	.Arg(XLL_DOUBLE, L"t", L"is the time in years to expiration.", L"0.25")
+	.Category(L"XLL")
+	.FunctionHelp(L"Return implied volatility.")
+);
+
+double WINAPI xll_black_put_implied(double f, double sigma, double k, double t)
+{
+#pragma XLLEXPORT
+	double result = std::numeric_limits<double>::quiet_NaN();
+
+	try {
+		result = put_implied_volatility(f, sigma, k, t);
+	}
+	catch (const std::exception & ex) {
+		XLL_ERROR(ex.what());
+	}
+
+	return result;
+};
