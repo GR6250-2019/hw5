@@ -75,8 +75,29 @@ namespace fms::black {
     template<class F, class P, class K, class T>
     inline auto put_implied_volatility(F f, P p, K k, T t)
     {
-        //!!! Put in appropriate checks, including bounds for p.
-        return 0; // !!!implement using Newton-Raphson 
+		ensure(p > 0);
+		ensure(t > 0);
+		ensure(f > 0);
+		ensure(k > 0);
+
+		auto sigma_initial = 0.1;
+		auto y0 = put(f, sigma_initial, k, t) - p;
+		auto y_0 = vega(f, sigma_initial, k, t) ;
+		auto x_1 = sigma_initial - y0 / y_0;
+		auto count = 0;
+		while (put(f, x_1, k, t) != 0) {
+			count = count + 1;
+			y0 = put(f, x_1, k, t) - p;
+			y_0 = vega(f, x_1, k, t) ;
+			x_1 = x_1 - y0 / y_0;
+			if (count > 99999) {
+				//when there is no convergernce over this amout of iteration
+				//return error value
+				x_1 = -1;
+				return x_1;
+			}
+		}
+        return x_1; // !!!implement using Newton-Raphson 
     }
 
 } // fms::black
