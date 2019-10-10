@@ -95,7 +95,7 @@ test test_delta([]() {
 
 test test_vega([]() {
     //!!! Implement a test for vega
-
+	/*
 	double f = 100;
 	double sigma = .2;
 	double k = 100;
@@ -112,10 +112,10 @@ test test_vega([]() {
 		//double a, b;
 		//a = dp - dp_;
 		//b = gamma * h * h / 2;
-		ensure(fabs(dp - dp_) <= dvega * h * h / 2);
+		ensure(fabs(dp - dp_)  <= dvega * h * h / 2);
 	}
-
-	//ensure(abs(vega(100, .2, 110, .25) - 13.26711) < 0.01);
+	*/
+	ensure(abs(vega(100, .2, 110, .25) - 13.26711) < 0.01);
     });
 
 //!!! Implement XLL.BLACK.PUT.IMPLIED(f, p, k, t) where p is the put value.
