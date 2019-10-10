@@ -68,15 +68,28 @@ namespace fms::black {
         auto d2 = -moneyness(f, s, k);
         auto d1 = d2 + s;
 
-        return f*normal::pdf(d1)*t;
+        return f*normal::pdf(d1)*sqrt(t);
     }
 
     // Value of sigma for a put having value p.
     template<class F, class P, class K, class T>
     inline auto put_implied_volatility(F f, P p, K k, T t)
-    {
-        //!!! Put in appropriate checks, including bounds for p.
-        return 0; // !!!implement using Newton-Raphson 
-    }
+		{
+			//!!! Put in appropriate checks, including bounds for p.
+
+			ensure(f > 0);
+			ensure(p >= 0);
+			ensure(k > 0);
+			ensure(t > 0);
+
+			auto sigma = 0.3;
+			auto p_ = put(f, sigma, k, t);
+			do{
+				sigma = sigma +(p-p_) / vega(f, sigma, k, t);
+				p_ = put(f, sigma, k, t);
+			} while (fabs(p_ - p) > 0.00001);
+			return sigma; // !!!implement using Newton-Raphson 
+		}
+    
 
 } // fms::black
