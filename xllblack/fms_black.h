@@ -75,8 +75,20 @@ namespace fms::black {
     template<class F, class P, class K, class T>
     inline auto put_implied_volatility(F f, P p, K k, T t)
     {
-        //!!! Put in appropriate checks, including bounds for p.
-        return 0; // !!!implement using Newton-Raphson 
+		ensure(p > 0);
+		ensure(t > 0);
+
+		double x_, x = f-k;//is it good for initial guess
+
+		do {
+			x_ = x - put(f,x,k,t)/ vega(f,x,k,t);
+			std::swap(x_, x);
+		} while (fabs(x_ - x) > 2 * std::numeric_limits<double>::epsilon());
+
+
+		
+		//!!! Put in appropriate checks, including bounds for p.
+        return x; // !!!implement using Newton-Raphson 
     }
 
 } // fms::black
