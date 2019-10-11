@@ -3,10 +3,6 @@
 #include "..//xll12/xll/ensure.h"
 #include "fms_normal.h"
 
-#ifndef M_SQRT2PI
-#define M_SQRT2PI  2.50662827463100050240
-#endif
-
 namespace fms::black {
 
 	// F = f exp(sigma B_t - sigma^2 t/2) is the Black model.
@@ -20,85 +16,82 @@ namespace fms::black {
 
 		return (s * s / 2 + log(k / f)) / s;
 	}
-    
-    // E(k - F)^+ = k P(F <= k) - f P_(F <= k) 
+
 	template<class F, class S, class K, class T>
 	inline auto put(F f, S sigma, K k, T t)
 	{
-        ensure(sigma > 0);
-        ensure(t > 0);
+		ensure(sigma > 0);
+		ensure(t > 0);
 
-        auto s = sigma * sqrt(t);
-		auto d2 = moneyness(f, s, k);
-		auto d1 = d2 - s;
+		auto s = sigma * sqrt(t);
+		auto d2 = -moneyness(f, s, k);
+		auto d1 = d2 + s;
 
-		return k * normal::cdf(d2) - f * normal::cdf(d1);
+		return k * normal::cdf(-d2) - f * normal::cdf(-d1);
 	}
 
-    // E(F - k)^+ = f P_(F >= k) - k P(F >= k)
 	template<class F, class S, class K, class T>
 	inline auto call(F f, S sigma, K k, T t)
 	{
-        ensure(sigma > 0);
-        ensure(t > 0);
-        
-        auto s = sigma * sqrt(t);
-		auto d2 = moneyness(f, s, k);
-		auto d1 = d2 - s;
+		ensure(sigma > 0);
+		ensure(t > 0);
 
-		return f * normal::cdf(-d1) - k * normal::cdf(-d2); // 1 - N(x) = N(-x);
+		auto s = sigma * sqrt(t);
+		auto d2 = -moneyness(f, s, k);
+		auto d1 = d2 + s;
+
+		return f * normal::cdf(d1) - k * normal::cdf(d2);
 	}
 
-    // Derivative of put value with respect to f.
-    template<class F, class S, class K, class T>
-    inline auto put_delta(F f, S sigma, K k, T t)
-    {
-        ensure(sigma > 0);
-        ensure(t > 0);
-        
-        auto s = sigma * sqrt(t);
-        auto d2 = moneyness(f, s, k);
-        auto d1 = d2 - s;
+	// Derivative of put value with respect to f.
+	template<class F, class S, class K, class T>
+	inline auto put_delta(F f, S sigma, K k, T t)
+	{
+		ensure(sigma > 0);
+		ensure(t > 0);
 
-        return -normal::cdf(d1);
-    }
+		auto s = sigma * sqrt(t);
+		auto d2 = -moneyness(f, s, k);
+		auto d1 = d2 + s;
 
-    // Derivative of a put or call value with respect to sigma.
-    template<class F, class S, class K, class T>
-    inline auto vega(F f, S sigma, K k, T t)
-    {
-        ensure(sigma > 0);
-        ensure(t > 0);
-        
-        auto s = sigma * sqrt(t);
-        auto d2 = moneyness(f, s, k);
-        auto d1 = d2 - s;
+		return -normal::cdf(-d1);
+	}
 
-        return f*normal::pdf(d1)*sqrt(t);
-    }
+	// Derivative of a put or call value with respect to sigma.
+	template<class F, class S, class K, class T>
+	inline auto vega(F f, S sigma, K k, T t)
+	{
+		ensure(sigma > 0);
+		ensure(t > 0);
 
-    // Value of sigma for a put having value p.
-    template<class F, class P, class K, class T>
-    inline auto put_implied_volatility(F f, P p, K k, T t)
-    {
-        // appropriate checks, including bounds for p.		
-		
-		ensure(f > 0);
-		ensure(p > 0);
-		ensure(p < k);
-		ensure(k > 0);
-		ensure(t > 0);				
-		
-		// implement using Newton-Raphson 
-		
-		double x_, x = ( p / f ) * M_SQRT2PI / sqrt( t ) ;
+		auto s = sigma * sqrt(t);
+		auto d2 = -moneyness(f, s, k);
+		auto d1 = d2 + s;
 
-		do {
-			x_ = x - (put(f, x, k, t) - p) / vega(f, x, k, t);
-			std::swap(x_, x);
-		} while (fabs(x_ - x) > 2*std::numeric_limits<double>::epsilon());
+		return f * normal::pdf(d1) * sqrt(t);
+	}
 
-		return x_;
-    }
+	// Value of sigma for a put having value p.
+	template<class F, class P, class K, class T>
+	inline auto put_implied_volatility(F f, P p, K k, T t)
+	{
+		//!!! Put in appropriate checks, including bounds for p.
+		ensure(t > 0 && k - f <= p && p >= k - f);
+
+		//Better initial
+		//double VolImplied = (M_SQRT2PI / sqrt(t)) * (p / f);
+		double VolImplied = 0.3;
+		double PutPrice = put(f, VolImplied, k, t);
+
+		while (fabs(PutPrice - p) > 1e-3)
+		{
+			double v = vega(f, VolImplied, k, t);
+			VolImplied -= (PutPrice - p) / v;
+
+			PutPrice = put(f, VolImplied, k, t);
+		}
+
+		return VolImplied; // !!!implement using Newton-Raphson 
+	}
 
 } // fms::black
