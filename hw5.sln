@@ -7,6 +7,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xllblack", "xllblack\xllbla
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xll12", "xll12\xll12.vcxproj", "{3563C165-8A72-4BE5-B8AF-FD5904C9030E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D864E36D-BEEA-4495-8181-C3C08624EE1D}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\..\Desktop\normal_inv.xlsx = ..\..\..\Desktop\normal_inv.xlsx
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
